@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图片压缩</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+
+<body>
+    <!-- <h1 class="animated  fadeInDown faster">Example</h1> -->
+    <div class="content" id="vue">
+        <img class="settingIcon" src="./assets/settingIcon.png" @click="showSetting" />
+        <!-- modal弹窗 -->
+        <div class="modal " v-show="isShowModal">
+            <div class="content animated faster fadeInDown">
+                <div class="header">
+                    设置
+                    <img class="closeIcon" src="./assets/close.png" @click="closeSetting" />
+                </div>
+                <div class="lineDiv">
+                    <span>是否覆盖原图片:</span>
+                    <el-switch v-model="value" active-color="#13ce66" inactive-color="#ff4949" />
+                </div>
+
+            </div>
+        </div>
+
+        <div class="home">
+            <!-- 小火箭 -->
+            <div class="rocket-holder" v-if="!isLoading">
+                <img class='rocket' src="./assets/rocket.png" />
+                <img class="rainbow" src="./assets/rainbow.png" />
+            </div>
+            <div class="container" v-else>
+                <span class="girl"></span>
+                <div class="boys">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- 提示文字 -->
+            <div class="progressDiv">
+                <div v-if="isLoading">
+                    <p class="progress" v-if='!isEnd'>{{number}}/{{total}}</p>
+                    <p class="progress" v-if='isEnd'>压缩完毕!</p>
+                    <p class="progress" v-else>正在压缩中...</p>
+                </div>
+                <div v-else>
+                    <p class="progress">请拖入需要压缩的图片或者文件夹</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const TinyPng = require('web-tinypngjs');
+        const app = new Vue({
+            el: '#vue',
+            data: {
+                total: 0,
+                number: 0,
+                isTemporaryFile: false,
+                isLoading: false, //是否在压缩
+                isEnd: false, //是否压缩结束
+                isShowModal: false, //显示modal
+                value: true
+
+            },
+            created: function() {
+                this.dropInit();
+            },
+            methods: {
+                showSetting: function() {
+                    this.isShowModal = true;
+                },
+                closeSetting: function() {
+                    this.isShowModal = false;
+                },
+                // 拖拽初始化
+                dropInit: function() {
+                    document.addEventListener("drop", preventDe);
+                    document.addEventListener("dragleave", preventDe);
+                    document.addEventListener("dragover", preventDe);
+                    document.addEventListener("dragenter", preventDe);
+
+                    function preventDe(e) {
+                        e.preventDefault();
+                    }
+                    document.addEventListener("drop", async(e) => {
+                        e.preventDefault();
+                        const fileInfo = e.dataTransfer.files[0];
+                        console.log('fileInfo: ', fileInfo);
+                        this.isLoading = true;
+                        const {
+                            name,
+                            path,
+                            type
+                        } = fileInfo;
+                        //如果是文件夹
+                        if (type === '') {
+                            const imageList = await TinyPng.getAllImg(path);
+
+                            //判断是否有store文件
+
+                            if (imageList.length > 0) {
+                                this.total = imageList.length
+                            }
+
+                            if (imageList.length === 0) {
+                                alert('文件夹里面未搜索到图片哦~')
+                            } else {
+                                let isTemporaryFile = false;
+                                imageList.find((item) => {
+                                    if (item.name === ".DS_Store") {
+                                        isTemporaryFile = true;
+                                    }
+                                    this.total = isTemporaryFile ? imageList.length - 1 : imageList.length;
+                                    this.isEnd = false;
+                                    this.isTemporaryFile = isTemporaryFile;
+                                })
+                                TinyPng.compress(path, '/Users/admin/Desktop/阿尔塔', this.process);
+                            }
+                        } else if (type.includes("image")) {
+                            this.isEnd = false;
+                            TinyPng.compressImg(path, `/Users/admin/Desktop/tinypng/${name}`).then((res) => {
+                                this.isEnd = true;
+
+
+                            });
+
+
+                        } else {
+                            alert("不是图片哦")
+                        }
+                    })
+                },
+                // 页面回调
+                process: function(res, number, total) {
+                    if (this.isTemporaryFile) {
+                        --total;
+                        --number;
+                    }
+                    if (number === total) {
+                        this.isEnd = true;
+                    }
+                    this.number = number;
+                    this.total = total;
+                }
+            }
+
+        })
+    </script>
+    <!-- 动画 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
+    <!-- 基础样式 -->
+    <link rel="stylesheet" href="index.css">
+
+
+</body>
+
+</html>
