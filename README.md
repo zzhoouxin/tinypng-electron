@@ -1,2 +1,3 @@
 # tinypng-electron
-# tinypng-electron
+- npm install
+- npm start
