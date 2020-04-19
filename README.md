@@ -1,4 +1,7 @@
 # tinypng-electron
+##执行命令
 - npm install
 - npm start
-https://img13.ihomefnt.com/nor/arts-centre/UserArt/4d9b333db158d3ba277d03f96834f0ba00ecd40531006fa6d18a7fbe8aed6758.png!original
+
+##案例
+![WechatIMG31.png](https://upload-images.jianshu.io/upload_images/7078301-aa31ee926953fa35.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/340)
