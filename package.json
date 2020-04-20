@@ -12,6 +12,7 @@
         "electron": "^8.2.0"
     },
     "dependencies": {
+        "fs-extra": "^9.0.0",
         "web-tinypngjs": "^1.0.1"
     }
 }
