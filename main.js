@@ -1,4 +1,5 @@
-const { app, BrowserWindow } = require('electron')
+
+const { app, BrowserWindow,ipcMain ,dialog} = require('electron');
 
 function createWindow () {   
   // 创建浏览器窗口

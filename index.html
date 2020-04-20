@@ -26,9 +26,24 @@
                 </div>
                 <div class="lineDiv">
                     <span>是否覆盖原图片:</span>
-                    <el-switch v-model="value" active-color="#13ce66" inactive-color="#ff4949" />
+                    <el-switch v-model="isCover" active-color="#13ce66" />
                 </div>
+            </div>
+        </div>
 
+        <div class="modal " v-show="isShowTipsModal">
+            <div class="tipsContent animated faster fadeInDown">
+                <div class="header">
+                    提示
+                    <img class="closeIcon" src="./assets/close.png" @click="closeTips" />
+                </div>
+                <div class="tipsLineDiv">
+                    <span>当前有压缩任务正在进行中,是否重新开始压缩任务?</span>
+                </div>
+                <div class="tipsLineIconDiv">
+                    <img class="tipsClose" src="./assets/tipsClose.png" @click="closeTips" />
+                    <img class="affirmIcon" src="./assets/confirm.png" @click='coverNewFile' />
+                </div>
             </div>
         </div>
 
@@ -63,6 +78,7 @@
     </div>
     <script>
         const TinyPng = require('web-tinypngjs');
+
         const app = new Vue({
             el: '#vue',
             data: {
@@ -72,18 +88,62 @@
                 isLoading: false, //是否在压缩
                 isEnd: false, //是否压缩结束
                 isShowModal: false, //显示modal
-                value: true
-
+                isShowTipsModal: false, //提示已经有任务
+                isCover: false, //是否覆盖原来的图片
+                tempInfo: null //临时存放拖拽文件的地方
             },
             created: function() {
                 this.dropInit();
             },
             methods: {
-                showSetting: function() {
-                    this.isShowModal = true;
-                },
-                closeSetting: function() {
-                    this.isShowModal = false;
+                //处理图片的方法-提取公共
+                disposeImage: async function(e) {
+                    debugger
+                    const fileInfo = e.dataTransfer.files[0];
+                    this.isLoading = true;
+                    let isCover = this.isCover;
+                    const {
+                        name,
+                        path,
+                        type
+                    } = fileInfo;
+                    //如果是文件夹
+                    if (type === '') {
+                        const imageList = await TinyPng.getAllImg(path);
+                        //判断是否有store文件
+                        if (imageList.length > 0) {
+                            this.total = imageList.length
+                        }
+                        if (imageList.length === 0) {
+                            alert('文件夹里面未搜索到图片哦~')
+                        } else {
+                            let isTemporaryFile = false;
+                            imageList.find((item) => {
+                                    if (item.name === ".DS_Store") {
+                                        isTemporaryFile = true;
+                                    }
+                                    this.total = isTemporaryFile ? imageList.length - 1 : imageList.length;
+                                    this.isEnd = false;
+                                    this.isTemporaryFile = isTemporaryFile;
+
+                                })
+                                //如果需要覆盖的话 输出地址不传
+                            TinyPng.compress(path, isCover ? '' : '/Users/admin/Desktop/tinyPny', this.process);
+                        }
+                    } else if (type.includes("image")) {
+                        this.isEnd = false;
+                        this.number = 1;
+                        this.total = 1;
+                        //如果需要覆盖的话 输出地址不传
+                        TinyPng.compressImg(path, isCover ? "" : `/Users/admin/Desktop/tinypng/${name}`).then((res) => {
+                            this.isEnd = true;
+                            this.isLoading = false;
+                        });
+                    } else {
+                        alert("不是图片哦")
+                    }
+
+
                 },
                 // 拖拽初始化
                 dropInit: function() {
@@ -95,51 +155,14 @@
                     function preventDe(e) {
                         e.preventDefault();
                     }
+
                     document.addEventListener("drop", async(e) => {
                         e.preventDefault();
-                        const fileInfo = e.dataTransfer.files[0];
-                        console.log('fileInfo: ', fileInfo);
-                        this.isLoading = true;
-                        const {
-                            name,
-                            path,
-                            type
-                        } = fileInfo;
-                        //如果是文件夹
-                        if (type === '') {
-                            const imageList = await TinyPng.getAllImg(path);
-
-                            //判断是否有store文件
-
-                            if (imageList.length > 0) {
-                                this.total = imageList.length
-                            }
-
-                            if (imageList.length === 0) {
-                                alert('文件夹里面未搜索到图片哦~')
-                            } else {
-                                let isTemporaryFile = false;
-                                imageList.find((item) => {
-                                    if (item.name === ".DS_Store") {
-                                        isTemporaryFile = true;
-                                    }
-                                    this.total = isTemporaryFile ? imageList.length - 1 : imageList.length;
-                                    this.isEnd = false;
-                                    this.isTemporaryFile = isTemporaryFile;
-                                })
-                                TinyPng.compress(path, '/Users/admin/Desktop/阿尔塔', this.process);
-                            }
-                        } else if (type.includes("image")) {
-                            this.isEnd = false;
-                            TinyPng.compressImg(path, `/Users/admin/Desktop/tinypng/${name}`).then((res) => {
-                                this.isEnd = true;
-
-
-                            });
-
-
+                        if (this.isLoading) {
+                            this.isShowTipsModal = true;
+                            this.tempInfo = e.dataTransfer.files[0];
                         } else {
-                            alert("不是图片哦")
+                            this.disposeImage(e);
                         }
                     })
                 },
@@ -149,16 +172,41 @@
                         --total;
                         --number;
                     }
-                    if (number === total) {
-                        this.isEnd = true;
-                    }
                     this.number = number;
                     this.total = total;
-                }
+                    if (number === total) {
+                        this.isLoading = false;
+                        this.isEnd = true;
+                        this.total = 0;
+                        this.number = 0;
+                    }
+                },
+                showSetting: function() {
+                    this.isShowModal = true;
+                },
+                closeSetting: function() {
+                    this.isShowModal = false;
+                },
+                closeTips: function() {
+                    this.isShowTipsModal = false;
+                },
+                coverNewFile: function() {
+                    this.total = 0;
+                    this.number = 0;
+                    this.isShowTipsModal = false;
+                    let tempInfo = this.tempInfo;
+                    const data = {
+                        dataTransfer: {
+                            files: [tempInfo]
+                        }
+                    }
+                    this.disposeImage(data)
+                },
             }
 
         })
     </script>
+
     <!-- 动画 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
     <!-- 基础样式 -->
