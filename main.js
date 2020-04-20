@@ -1,5 +1,5 @@
 
-const { app, BrowserWindow,ipcMain ,dialog} = require('electron');
+const { app, BrowserWindow,ipcMain ,dialog,ipcRenderer} = require('electron');
 
 function createWindow () {   
   // 创建浏览器窗口
@@ -10,9 +10,9 @@ function createWindow () {
       nodeIntegration: true
     }
   })
-
   // 加载index.html文件
   win.loadFile('index.html')
 }
+
 
 app.on('ready', createWindow)

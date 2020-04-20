@@ -12,12 +12,15 @@
     <!-- import JavaScript -->
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 </head>
+<script>
+</script>
 
 <body>
     <!-- <h1 class="animated  fadeInDown faster">Example</h1> -->
     <div class="content" id="vue">
         <img class="settingIcon" src="./assets/settingIcon.png" @click="showSetting" />
         <!-- modal弹窗 -->
+        <transition name="slide-fade"></transition>
         <div class="modal " v-show="isShowModal">
             <div class="content animated faster fadeInDown">
                 <div class="header">
@@ -28,8 +31,14 @@
                     <span>是否覆盖原图片:</span>
                     <el-switch v-model="isCover" active-color="#13ce66" />
                 </div>
+                <div class="lineDiv">
+                    <span>图片保存地址:</span>
+
+                    <p class="saveUrl"> {{saveFileUrl}}/tinypng</p>
+                </div>
             </div>
         </div>
+        </transition>
 
         <div class="modal " v-show="isShowTipsModal">
             <div class="tipsContent animated faster fadeInDown">
@@ -68,7 +77,7 @@
                 <div v-if="isLoading">
                     <p class="progress" v-if='!isEnd'>{{number}}/{{total}}</p>
                     <p class="progress" v-if='isEnd'>压缩完毕!</p>
-                    <p class="progress" v-else>正在压缩中...</p>
+                    <p class="progress" v-else>{{tipsTitle}}</p>
                 </div>
                 <div v-else>
                     <p class="progress">请拖入需要压缩的图片或者文件夹</p>
@@ -78,27 +87,35 @@
     </div>
     <script>
         const TinyPng = require('web-tinypngjs');
-
+        const saveFileUrl = require('path').join(require('os').homedir(), 'Desktop')
+        console.log('saveFileUrl: ', saveFileUrl);
         const app = new Vue({
             el: '#vue',
             data: {
                 total: 0,
                 number: 0,
+                saveFileUrl: saveFileUrl,
                 isTemporaryFile: false,
                 isLoading: false, //是否在压缩
                 isEnd: false, //是否压缩结束
                 isShowModal: false, //显示modal
                 isShowTipsModal: false, //提示已经有任务
                 isCover: false, //是否覆盖原来的图片
-                tempInfo: null //临时存放拖拽文件的地方
+                tempInfo: null, //临时存放拖拽文件的地方
+                tipsTitle: "正在压缩中..."
             },
             created: function() {
                 this.dropInit();
             },
             methods: {
+                disposeTipsTitle: function() {
+                    this.tipsTitle = '压缩后图片将保存在桌面tinypng文件中...'
+                    setTimeout(() => {
+                        this.tipsTitle = '正在压缩中'
+                    }, 5000)
+                },
                 //处理图片的方法-提取公共
                 disposeImage: async function(e) {
-                    debugger
                     const fileInfo = e.dataTransfer.files[0];
                     this.isLoading = true;
                     let isCover = this.isCover;
@@ -118,24 +135,27 @@
                             alert('文件夹里面未搜索到图片哦~')
                         } else {
                             let isTemporaryFile = false;
-                            imageList.find((item) => {
-                                    if (item.name === ".DS_Store") {
-                                        isTemporaryFile = true;
-                                    }
-                                    this.total = isTemporaryFile ? imageList.length - 1 : imageList.length;
-                                    this.isEnd = false;
-                                    this.isTemporaryFile = isTemporaryFile;
 
-                                })
-                                //如果需要覆盖的话 输出地址不传
-                            TinyPng.compress(path, isCover ? '' : '/Users/admin/Desktop/tinyPny', this.process);
+                            imageList.find((item) => {
+                                if (item.name === ".DS_Store") {
+                                    isTemporaryFile = true;
+                                }
+                                this.total = isTemporaryFile ? imageList.length - 1 : imageList.length;
+                                this.isEnd = false;
+                                this.isTemporaryFile = isTemporaryFile;
+
+                            })
+                            this.disposeTipsTitle();
+                            //如果需要覆盖的话 输出地址不传
+                            TinyPng.compress(path, isCover ? '' : `${this.saveFileUrl}/tinypng`, this.process);
                         }
                     } else if (type.includes("image")) {
                         this.isEnd = false;
                         this.number = 1;
                         this.total = 1;
+                        this.disposeTipsTitle();
                         //如果需要覆盖的话 输出地址不传
-                        TinyPng.compressImg(path, isCover ? "" : `/Users/admin/Desktop/tinypng/${name}`).then((res) => {
+                        TinyPng.compressImg(path, isCover ? "" : `${this.saveFileUrl}/tinypng/${name}`).then((res) => {
                             this.isEnd = true;
                             this.isLoading = false;
                         });

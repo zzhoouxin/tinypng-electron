@@ -103,6 +103,11 @@ body {
     font-size: 14px;
 }
 
+.saveUrl {
+    color: #423F3D;
+    font-size: 14px;
+}
+
 .modal .lineDiv span {
     width: 30%;
     text-align: center;
