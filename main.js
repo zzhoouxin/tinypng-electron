@@ -8,7 +8,9 @@ function createWindow () {
     height: 500,
     webPreferences: {
       nodeIntegration: true
-    }
+    },
+    titleBarStyle: 'hidden'
+    // frame: false
   })
   // 加载index.html文件
   win.loadFile('index.html')

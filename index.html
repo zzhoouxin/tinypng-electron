@@ -11,6 +11,11 @@
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <!-- import JavaScript -->
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- 动画 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
+    <!-- 基础样式 -->
+    <link rel="stylesheet" href="index.css">
+
 </head>
 <script>
 </script>
@@ -87,8 +92,11 @@
     </div>
     <script>
         const TinyPng = require('web-tinypngjs');
-        const saveFileUrl = require('path').join(require('os').homedir(), 'Desktop')
-        console.log('saveFileUrl: ', saveFileUrl);
+        //本地桌面地址
+        const saveFileUrl = require('path').join(require('os').homedir(), 'Desktop');
+        const {
+            shell
+        } = require('electron')
         const app = new Vue({
             el: '#vue',
             data: {
@@ -102,7 +110,8 @@
                 isShowTipsModal: false, //提示已经有任务
                 isCover: false, //是否覆盖原来的图片
                 tempInfo: null, //临时存放拖拽文件的地方
-                tipsTitle: "正在压缩中..."
+                tipsTitle: "正在压缩中...", //提示语
+                imageResult: [] //存放处理后的文件信息
             },
             created: function() {
                 this.dropInit();
@@ -158,12 +167,14 @@
                         TinyPng.compressImg(path, isCover ? "" : `${this.saveFileUrl}/tinypng/${name}`).then((res) => {
                             this.isEnd = true;
                             this.isLoading = false;
+                            if (res) {
+                                this.imageResult.push(res)
+                            }
+                            this.messageNotice();
                         });
                     } else {
                         alert("不是图片哦")
                     }
-
-
                 },
                 // 拖拽初始化
                 dropInit: function() {
@@ -188,9 +199,14 @@
                 },
                 // 页面回调
                 process: function(res, number, total) {
+                    console.log('res: ', res);
+                    //如果有临时文件 数量-1
                     if (this.isTemporaryFile) {
                         --total;
                         --number;
+                    }
+                    if (res) {
+                        this.imageResult.push(res)
                     }
                     this.number = number;
                     this.total = total;
@@ -199,6 +215,7 @@
                         this.isEnd = true;
                         this.total = 0;
                         this.number = 0;
+                        this.messageNotice();
                     }
                 },
                 showSetting: function() {
@@ -222,15 +239,56 @@
                     }
                     this.disposeImage(data)
                 },
+                hahhah: function() {
+                    let option = {
+                        title: "文件压缩成功!",
+                        body: `本次共压缩了111个文件夹,共计压缩ahahah`,
+                        // href: 'https://www.iqiyi.com/v_19rqz6uit0.html',
+                    };
+                    let hhwNotication = new window.Notification(option.title, option);
+                },
+                //消息通知
+                messageNotice: function() {
+                    console.log("还进入这边么")
+                    let number = 0;
+                    let compressionSize = 0;
+                    let compressionSizeDesc = '';
+                    this.imageResult.map((item) => {
+                        ++number;
+
+                        compressionSize += (item.input.size - item.output.size);
+                        compressionSizeDesc = this.getFileSize(compressionSize);
+                    })
+                    let option = {
+                        title: "文件压缩成功!",
+                        body: `本次共压缩了${number}个文件夹,共计压缩${compressionSizeDesc}`,
+                    };
+                    // 创建通知并保存
+                    let hhwNotication = new window.Notification(option.title, option);
+                    // 当通知被点击时, 用默认浏览器打开链接
+                    hhwNotication.onclick = function() {
+                        console.log("打开一些操作")
+                            // shell.openExternal(option.href)
+                    }
+
+                },
+                //获取文件多少kb
+                getFileSize: function(fileByte) {
+                    var fileSizeByte = fileByte;
+                    var fileSizeMsg = "";
+                    if (fileSizeByte < 1048576) fileSizeMsg = (fileSizeByte / 1024).toFixed(2) + "KB";
+                    else if (fileSizeByte == 1048576) fileSizeMsg = "1MB";
+                    else if (fileSizeByte > 1048576 && fileSizeByte < 1073741824) fileSizeMsg = (fileSizeByte / (1024 * 1024)).toFixed(2) + "MB";
+                    else if (fileSizeByte > 1048576 && fileSizeByte == 1073741824) fileSizeMsg = "1GB";
+                    else if (fileSizeByte > 1073741824 && fileSizeByte < 1099511627776) fileSizeMsg = (fileSizeByte / (1024 * 1024 * 1024)).toFixed(2) + "GB";
+                    else fileSizeMsg = "文件超过1TB";
+                    return fileSizeMsg;
+                }
             }
 
         })
     </script>
 
-    <!-- 动画 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
-    <!-- 基础样式 -->
-    <link rel="stylesheet" href="index.css">
 
 
 </body>
