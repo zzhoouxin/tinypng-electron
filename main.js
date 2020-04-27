@@ -1,7 +1,7 @@
 
 const { app, BrowserWindow,ipcMain ,dialog,ipcRenderer} = require('electron');
 
-function createWindow () {   
+function createWindow () {
   // 创建浏览器窗口
   let win = new BrowserWindow({
     width: 600,
@@ -9,7 +9,6 @@ function createWindow () {
     webPreferences: {
       nodeIntegration: true
     },
-    titleBarStyle: 'hidden'
     // frame: false
   })
   // 加载index.html文件

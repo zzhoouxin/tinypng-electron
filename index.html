@@ -239,32 +239,24 @@
                     }
                     this.disposeImage(data)
                 },
-                hahhah: function() {
-                    let option = {
-                        title: "文件压缩成功!",
-                        body: `本次共压缩了111个文件夹,共计压缩ahahah`,
-                        // href: 'https://www.iqiyi.com/v_19rqz6uit0.html',
-                    };
-                    let hhwNotication = new window.Notification(option.title, option);
-                },
                 //消息通知
                 messageNotice: function() {
                     console.log("还进入这边么")
-                    let number = 0;
+                    let disposerNumber = 0;
                     let compressionSize = 0;
                     let compressionSizeDesc = '';
                     this.imageResult.map((item) => {
-                        ++number;
-
+                        ++disposerNumber;
                         compressionSize += (item.input.size - item.output.size);
                         compressionSizeDesc = this.getFileSize(compressionSize);
                     })
                     let option = {
                         title: "文件压缩成功!",
-                        body: `本次共压缩了${number}个文件夹,共计压缩${compressionSizeDesc}`,
+                        body: `本次共压缩了${disposerNumber}个文件夹,共计压缩${compressionSizeDesc}`,
                     };
                     // 创建通知并保存
                     let hhwNotication = new window.Notification(option.title, option);
+                    this.imageResult = [];
                     // 当通知被点击时, 用默认浏览器打开链接
                     hhwNotication.onclick = function() {
                         console.log("打开一些操作")
