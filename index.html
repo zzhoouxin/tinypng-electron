@@ -93,9 +93,11 @@
     <script>
         const TinyPng = require('web-tinypngjs');
         //本地桌面地址
-        const saveFileUrl = require('path').join(require('os').homedir(), 'Desktop');
+        const path = require('path');
+        const saveFileUrl = path.join(require('os').homedir(), 'Desktop');
         const {
-            shell
+            shell,
+            Notification
         } = require('electron')
         const app = new Vue({
             el: '#vue',
@@ -115,6 +117,7 @@
             },
             created: function() {
                 this.dropInit();
+
             },
             methods: {
                 disposeTipsTitle: function() {
@@ -241,7 +244,6 @@
                 },
                 //消息通知
                 messageNotice: function() {
-                    console.log("还进入这边么")
                     let disposerNumber = 0;
                     let compressionSize = 0;
                     let compressionSizeDesc = '';
@@ -253,14 +255,16 @@
                     let option = {
                         title: "文件压缩成功!",
                         body: `本次共压缩了${disposerNumber}个文件夹,共计压缩${compressionSizeDesc}`,
+                        icon: path.join(__dirname, './assets/programming.png')
+
                     };
                     // 创建通知并保存
                     let hhwNotication = new window.Notification(option.title, option);
                     this.imageResult = [];
+
                     // 当通知被点击时, 用默认浏览器打开链接
                     hhwNotication.onclick = function() {
                         console.log("打开一些操作")
-                            // shell.openExternal(option.href)
                     }
 
                 },
