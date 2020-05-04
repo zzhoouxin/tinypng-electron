@@ -9,11 +9,13 @@ function createWindow () {
     webPreferences: {
       nodeIntegration: true
     },
+    allowRendererProcessReuse:false
     // frame: false
   })
   // 加载index.html文件
   win.loadFile('index.html')
 }
 
+app.allowRendererProcessReuse = true;
 
 app.on('ready', createWindow)

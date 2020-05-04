@@ -79,6 +79,84 @@ body {
     margin-right: 20px;
 }
 
+
+/* 提示的modal */
+
+.modal .resultContet {
+    width: 65%;
+    height: 70%;
+    display: block;
+    margin-left: 20px;
+    background: #faedce;
+    overflow: hidden;
+}
+
+.resultLineDiv {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+.resultList {
+    padding: 5px 10px;
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #E3E1E0;
+}
+
+.resultList .resultImg {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    z-index: 2;
+}
+
+.resultList .titleDiv {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    height: 100%;
+    margin-left: 10px;
+    justify-content: space-around;
+}
+
+.resultList .titleDiv .img-title {
+    color: #404040;
+    font-size: 13px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.resultList .titleDiv .img-title {
+    color: #282828;
+    font-size: 13px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.resultList .titleDiv .fileSize {
+    color: #404040;
+    font-size: 11px;
+}
+
+.resultList .ratio {
+    line-height: 40px;
+    font-size: 13px;
+    margin-left: 15%;
+}
+
+.resultList .titleDiv .fileSize:nth-child(1) {
+    text-decoration: line-through;
+}
+
+.resultList .titleDiv .fileSize:nth-child(2) {
+    color: #7eb631;
+    font-weight: bold;
+}
+
 .modal .tipsLineDiv {
     width: 100%;
     height: 60px;
@@ -112,7 +190,6 @@ body {
     width: 30%;
     text-align: center;
     color: #423F3D;
-    /* background: brown; */
     font-size: 14px;
 }
 

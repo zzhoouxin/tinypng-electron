@@ -44,7 +44,7 @@
             </div>
         </div>
         </transition>
-
+        <!-- 存在新的任务 -->
         <div class="modal " v-show="isShowTipsModal">
             <div class="tipsContent animated faster fadeInDown">
                 <div class="header">
@@ -58,6 +58,34 @@
                     <img class="tipsClose" src="./assets/tipsClose.png" @click="closeTips" />
                     <img class="affirmIcon" src="./assets/confirm.png" @click='coverNewFile' />
                 </div>
+            </div>
+        </div>
+        <!-- 显示处理的结果页面 -->
+        <div class="modal " v-show="isShowResultList">
+            <div class="resultContet animated faster fadeInDown">
+                <div class="header">
+                    压缩完毕
+                    <img class="closeIcon" src="./assets/close.png" @click="closeTips('result')" />
+                </div>
+                <div class="resultLineDiv">
+                    <template v-for='item in newResult'>
+                    <div class="resultList">
+                        <div >
+                            <img  class ='resultImg'  v-bind:src="item.url"/>
+                        </div>
+                        <div class="titleDiv">
+                            <span class='img-title'>{{item.fileName}}</span>
+                            <div>
+                                <span class='img-title fileSize'>{{item.oldSize}}</span>
+                                <span class='img-title fileSize'>{{item.newSize}}</span>
+                            </div>
+                        </div>
+                        <span class='img-title ratio'>-{{item.ratio}}</span>
+                    </div>
+
+                </template>
+                </div>
+
             </div>
         </div>
 
@@ -113,7 +141,10 @@
                 isCover: false, //是否覆盖原来的图片
                 tempInfo: null, //临时存放拖拽文件的地方
                 tipsTitle: "正在压缩中...", //提示语
-                imageResult: [] //存放处理后的文件信息
+                imageResult: [], //存放处理后的文件信息
+                newResult: [], //通知过后 重新组装的数据
+                isShowResultList: false, //显示结果的列表页
+
             },
             created: function() {
                 this.dropInit();
@@ -123,7 +154,7 @@
                 disposeTipsTitle: function() {
                     this.tipsTitle = '压缩后图片将保存在桌面tinypng文件中...'
                     setTimeout(() => {
-                        this.tipsTitle = '正在压缩中'
+                        this.tipsTitle = '正在压缩中...'
                     }, 5000)
                 },
                 //处理图片的方法-提取公共
@@ -202,7 +233,8 @@
                 },
                 // 页面回调
                 process: function(res, number, total) {
-                    console.log('res: ', res);
+
+                    //處理下文件的名稱
                     //如果有临时文件 数量-1
                     if (this.isTemporaryFile) {
                         --total;
@@ -227,8 +259,15 @@
                 closeSetting: function() {
                     this.isShowModal = false;
                 },
-                closeTips: function() {
-                    this.isShowTipsModal = false;
+                closeTips: function(type) {
+
+                    if (type === 'result') {
+                        this.isShowResultList = false;
+                        this.newResult = [];
+                    } else {
+                        this.isShowTipsModal = false;
+                    }
+
                 },
                 coverNewFile: function() {
                     this.total = 0;
@@ -247,6 +286,7 @@
                     let disposerNumber = 0;
                     let compressionSize = 0;
                     let compressionSizeDesc = '';
+
                     this.imageResult.map((item) => {
                         ++disposerNumber;
                         compressionSize += (item.input.size - item.output.size);
@@ -256,15 +296,31 @@
                         title: "文件压缩成功!",
                         body: `本次共压缩了${disposerNumber}个文件夹,共计压缩${compressionSizeDesc}`,
                         icon: path.join(__dirname, './assets/programming.png')
-
                     };
                     // 创建通知并保存
                     let hhwNotication = new window.Notification(option.title, option);
+                    //通知过后-重新组装数据下
+                    let newResult = []
+                    this.imageResult.map((item) => {
+                        let oldSize = this.getFileSize(item.input.size);
+                        let newSize = this.getFileSize(item.output.size);
+                        let ratio = this.toPercent((item.input.size - item.output.size) / item.input.size);
+                        console.log()
+                        newResult.push({
+                            url: item.output.url,
+                            fileName: item.fileName,
+                            oldSize,
+                            newSize,
+                            ratio
+                        })
+                    })
+                    this.newResult = newResult;
+                    this.isShowResultList = true;
                     this.imageResult = [];
-
                     // 当通知被点击时, 用默认浏览器打开链接
                     hhwNotication.onclick = function() {
-                        console.log("打开一些操作")
+                        console.log("点击了吧")
+
                     }
 
                 },
@@ -279,6 +335,12 @@
                     else if (fileSizeByte > 1073741824 && fileSizeByte < 1099511627776) fileSizeMsg = (fileSizeByte / (1024 * 1024 * 1024)).toFixed(2) + "GB";
                     else fileSizeMsg = "文件超过1TB";
                     return fileSizeMsg;
+                },
+                //转成百分数
+                toPercent: function(point) {
+                    var str = Number(point * 100).toFixed(1);
+                    str += "%";
+                    return str;
                 }
             }
 
