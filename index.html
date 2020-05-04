@@ -305,10 +305,10 @@
                         let oldSize = this.getFileSize(item.input.size);
                         let newSize = this.getFileSize(item.output.size);
                         let ratio = this.toPercent((item.input.size - item.output.size) / item.input.size);
-                        console.log()
+                        let fileName = item.fileName.split(".")[0]
                         newResult.push({
                             url: item.output.url,
-                            fileName: item.fileName,
+                            fileName: fileName,
                             oldSize,
                             newSize,
                             ratio

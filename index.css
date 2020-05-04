@@ -102,7 +102,7 @@ body {
     background-color: white;
     display: flex;
     flex-direction: row;
-    border: 1px solid #E3E1E0;
+    border-bottom: 1px solid #E3E1E0;
 }
 
 .resultList .resultImg {
@@ -146,6 +146,7 @@ body {
     line-height: 40px;
     font-size: 13px;
     margin-left: 15%;
+    color: #919191;
 }
 
 .resultList .titleDiv .fileSize:nth-child(1) {
